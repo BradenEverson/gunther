@@ -28,6 +28,12 @@ impl TryFrom<u8> for OpCode {
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
             0x00 => Ok(Self::NoOp),
+            0x01 => Ok(Self::Left),
+            0x02 => Ok(Self::Right),
+            0x03 => Ok(Self::Up),
+            0x04 => Ok(Self::Down),
+            0x05 => Ok(Self::StartShoot),
+            0x06 => Ok(Self::EndShoot),
             _ => Err(UnknownOp),
         }
     }
