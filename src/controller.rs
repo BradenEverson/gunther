@@ -1,6 +1,9 @@
 //! A control interpreter for the turret
 
 use libc::{c_int, c_void};
+use opcode::OpCode;
+
+pub mod opcode;
 
 /// How long the header cmd is
 const HEADER_LEN: usize = 4;
@@ -26,7 +29,7 @@ pub struct Controller {
     /// Current controller state
     state: ControllerState,
     /// OpCode
-    opcode: u8,
+    opcode: OpCode,
     /// Payload
     payload: [u8; MAX_PAYLOAD],
 }
@@ -48,7 +51,7 @@ impl Controller {
         Self {
             read_pid,
             state: ControllerState::AwaitingHeader,
-            opcode: 0x00,
+            opcode: OpCode::NoOp,
             payload: [0; MAX_PAYLOAD],
         }
     }
