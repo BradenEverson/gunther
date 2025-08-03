@@ -3,6 +3,7 @@
 use libc::{c_int, c_void};
 use opcode::OpCode;
 
+pub mod exec;
 pub mod opcode;
 
 /// How long the header cmd is
@@ -100,14 +101,6 @@ impl Controller {
                 self.exec();
                 self.reset();
             }
-        }
-    }
-
-    /// Execute once a payload and opcode are parsed
-    pub fn exec(&mut self) {
-        match self.opcode {
-            OpCode::NoOp => {}
-            op => todo!("Implement {op:?}"),
         }
     }
 
