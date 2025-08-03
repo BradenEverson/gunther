@@ -20,10 +20,9 @@ fn main() {
         -1 => panic!("Fork failed"),
         0 => unsafe {
             close(read_end);
-            let msg: &[u8] = &[0x72, 0x02, 0x00, 0x02, 10, 1];
+            let msg: &[u8] = &[0x72, 0x02, 0x00, 0x02, 255, 1];
             write(write_end, msg.as_ptr() as *const c_void, msg.len());
-            close(write_end);
-            _exit(0);
+            loop {}
         },
         _ => {
             let mut controller = Controller::new(read_end);

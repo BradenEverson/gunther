@@ -16,7 +16,7 @@ impl Controller {
                 // Move stepper left
                 // [  steps ] [ delay ms ]
                 // [ 1 byte ] [  1 byte  ]
-                self.dir.set_high();
+                self.dir.set_low();
 
                 let steps = self.payload[0];
                 let delay_ms = Duration::from_millis(self.payload[1] as u64);
@@ -33,7 +33,7 @@ impl Controller {
                 // Move stepper right
                 // [  steps ] [ delay ms ]
                 // [ 1 byte ] [  1 byte  ]
-                self.dir.set_low();
+                self.dir.set_high();
 
                 let steps = self.payload[0];
                 let delay_ms = Duration::from_millis(self.payload[1] as u64);
