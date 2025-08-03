@@ -90,8 +90,6 @@ impl Controller {
                 }
 
                 self.len = u16::from_be_bytes([header_buf[1], header_buf[2]]);
-
-                println!("Header received {header_buf:X?}");
                 self.state = ControllerState::AwaitingPayload;
             }
             ControllerState::AwaitingPayload => {
@@ -107,7 +105,6 @@ impl Controller {
 
     /// Execute once a payload and opcode are parsed
     pub fn exec(&mut self) {
-        println!("Executing {:?}", self.opcode);
         match self.opcode {
             OpCode::NoOp => {}
             op => todo!("Implement {op:?}"),
