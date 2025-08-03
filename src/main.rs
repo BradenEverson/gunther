@@ -21,7 +21,9 @@ fn main() {
         0 => unsafe {
             close(read_end);
             let msg: &[u8] = &[0x72, 0x02, 0x00, 0x02, 255, 1];
-            write(write_end, msg.as_ptr() as *const c_void, msg.len());
+            for _ in 0..10 {
+                write(write_end, msg.as_ptr() as *const c_void, msg.len());
+            }
             loop {}
         },
         _ => {
