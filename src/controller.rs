@@ -10,6 +10,9 @@ const HEADER_LEN: usize = 4;
 
 const MAX_PAYLOAD: usize = 4;
 
+/// Magic number that starts all payloads
+const MAGIC_NUMBER: u8 = 0x72;
+
 /// All states a controller may have
 #[derive(Debug, Clone, Copy)]
 pub enum ControllerState {
@@ -22,7 +25,6 @@ pub enum ControllerState {
 }
 
 /// The controller state
-#[derive(Debug, Clone, Copy)]
 pub struct Controller {
     /// The PID
     read_pid: c_int,
@@ -30,6 +32,8 @@ pub struct Controller {
     state: ControllerState,
     /// OpCode
     opcode: OpCode,
+    /// Payload len
+    len: u16,
     /// Payload
     payload: [u8; MAX_PAYLOAD],
 }
@@ -38,10 +42,10 @@ pub fn read(pid: c_int, buf: &mut [u8]) -> usize {
     unsafe { libc::read(pid, buf.as_mut_ptr() as *mut c_void, buf.len()) as usize }
 }
 
-pub fn read_exact(pid: c_int, buf: &mut [u8]) {
+pub fn read_exact(pid: c_int, buf: &mut [u8], len: usize) {
     let mut curr = 0;
 
-    while curr < buf.len() {
+    while curr < len {
         curr += read(pid, &mut buf[curr..])
     }
 }
@@ -52,6 +56,7 @@ impl Controller {
             read_pid,
             state: ControllerState::AwaitingHeader,
             opcode: OpCode::NoOp,
+            len: 0,
             payload: [0; MAX_PAYLOAD],
         }
     }
@@ -60,12 +65,30 @@ impl Controller {
         match self.state {
             ControllerState::AwaitingHeader => {
                 let mut header_buf = [0u8; HEADER_LEN];
-                read_exact(self.read_pid, &mut header_buf);
+                read_exact(self.read_pid, &mut header_buf, HEADER_LEN);
+
+                if header_buf[0] != MAGIC_NUMBER {
+                    return;
+                }
+
+                if let Ok(op) = OpCode::try_from(header_buf[1]) {
+                    self.opcode = op;
+                } else {
+                    return;
+                }
+
+                self.len = u16::from_be_bytes([header_buf[2], header_buf[3]]);
 
                 println!("Header received {header_buf:X?}");
                 self.state = ControllerState::AwaitingPayload;
             }
-            _ => todo!("Implement {:?} state", self.state),
+            ControllerState::AwaitingPayload => {
+                read_exact(self.read_pid, &mut self.payload, self.len as usize);
+                self.state = ControllerState::Executing;
+            }
+            ControllerState::Executing => {
+                todo!("Execute")
+            }
         }
     }
 }
