@@ -14,12 +14,12 @@ impl Controller {
             }
             OpCode::Left => {
                 // Move stepper left
-                // [  steps ] [ delay ms ]
-                // [ 1 byte ] [  1 byte  ]
+                // [  steps  ] [ delay ms ]
+                // [ 2 bytes ] [  1 byte  ]
                 self.dir.set_low();
 
-                let steps = self.payload[0];
-                let delay_ms = Duration::from_millis(self.payload[1] as u64);
+                let steps = u16::from_be_bytes([self.payload[0], self.payload[1]]);
+                let delay_ms = Duration::from_millis(self.payload[2] as u64);
 
                 for _ in 0..steps {
                     self.step.set_high();
@@ -31,12 +31,12 @@ impl Controller {
             }
             OpCode::Right => {
                 // Move stepper right
-                // [  steps ] [ delay ms ]
-                // [ 1 byte ] [  1 byte  ]
+                // [  steps  ] [ delay ms ]
+                // [ 2 bytes ] [  1 byte  ]
                 self.dir.set_high();
 
-                let steps = self.payload[0];
-                let delay_ms = Duration::from_millis(self.payload[1] as u64);
+                let steps = u16::from_be_bytes([self.payload[0], self.payload[1]]);
+                let delay_ms = Duration::from_millis(self.payload[2] as u64);
 
                 for _ in 0..steps {
                     self.step.set_high();
