@@ -1,6 +1,5 @@
 use gunther::controller::Controller;
-use libc::{_exit, c_void, close, fork, pipe, read, write};
-use std::{ffi::CString, time::Duration};
+use libc::{_exit, c_void, close, fork, pipe, write};
 
 fn main() {
     let mut fds = [0; 2];
@@ -24,8 +23,11 @@ fn main() {
             _exit(0);
         },
         _ => {
-            let controller = Controller::new(read_end);
-            controller.controller_process();
+            let mut controller = Controller::new(read_end);
+
+            loop {
+                controller.controller_step();
+            }
         }
     }
 }
