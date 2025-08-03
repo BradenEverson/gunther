@@ -116,7 +116,11 @@ impl Controller {
                 self.state = ControllerState::AwaitingPayload;
             }
             ControllerState::AwaitingPayload => {
-                read_exact(self.read_pid, &mut self.payload, self.len as usize);
+                read_exact(
+                    self.read_pid,
+                    &mut self.payload[0..(self.len as usize)],
+                    self.len as usize,
+                );
                 self.state = ControllerState::Executing;
             }
             ControllerState::Executing => {
