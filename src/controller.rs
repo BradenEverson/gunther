@@ -38,10 +38,12 @@ pub struct Controller {
     payload: [u8; MAX_PAYLOAD],
 }
 
+/// Read into a buffer
 pub fn read(pid: c_int, buf: &mut [u8]) -> usize {
     unsafe { libc::read(pid, buf.as_mut_ptr() as *mut c_void, buf.len()) as usize }
 }
 
+/// Block and wait until we read an exact number of bytes
 pub fn read_exact(pid: c_int, buf: &mut [u8], len: usize) {
     let mut curr = 0;
 
@@ -51,6 +53,7 @@ pub fn read_exact(pid: c_int, buf: &mut [u8], len: usize) {
 }
 
 impl Controller {
+    /// Creates a new controller
     pub fn new(read_pid: c_int) -> Self {
         Self {
             read_pid,
@@ -61,6 +64,7 @@ impl Controller {
         }
     }
 
+    /// Steps once through the controller state
     pub fn controller_step(&mut self) {
         match self.state {
             ControllerState::AwaitingHeader => {
@@ -87,8 +91,24 @@ impl Controller {
                 self.state = ControllerState::Executing;
             }
             ControllerState::Executing => {
-                todo!("Execute")
+                self.exec();
+                self.reset();
             }
         }
+    }
+
+    /// Execute once a payload and opcode are parsed
+    pub fn exec(&mut self) {
+        match self.opcode {
+            OpCode::NoOp => {}
+            op => todo!("Implement {op:?}"),
+        }
+    }
+
+    /// Reset all state
+    pub fn reset(&mut self) {
+        self.len = 0;
+        self.opcode = OpCode::NoOp;
+        self.state = ControllerState::AwaitingHeader;
     }
 }

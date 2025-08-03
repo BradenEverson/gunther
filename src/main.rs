@@ -1,3 +1,6 @@
+//! Main system that creates two controller and commander processes that communicate via a UNIX
+//! pipe
+
 use gunther::controller::Controller;
 use libc::{_exit, c_void, close, fork, pipe, write};
 

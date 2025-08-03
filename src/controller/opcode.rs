@@ -4,7 +4,20 @@
 #[repr(u8)]
 #[derive(Debug, Clone, Copy)]
 pub enum OpCode {
+    /// Do nothing, default OpCode
     NoOp = 0x00,
+    /// Move stepper left
+    Left = 0x01,
+    /// Move stepper right
+    Right = 0x02,
+    /// Move servo up
+    Up = 0x03,
+    /// Move servo down
+    Down = 0x04,
+    /// Start shooting
+    StartShoot = 0x05,
+    /// Stop shooting
+    EndShoot = 0x06,
 }
 
 /// Parsing an op failed because the opcode doesn't exist
