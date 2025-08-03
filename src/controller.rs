@@ -2,6 +2,7 @@
 
 use libc::{c_int, c_void};
 use opcode::OpCode;
+use rppal::gpio::{Gpio, OutputPin};
 
 pub mod exec;
 pub mod opcode;
@@ -14,6 +15,12 @@ const MAX_PAYLOAD: usize = 4;
 
 /// Magic number that starts all payloads
 const MAGIC_NUMBER: u8 = 0x72;
+
+/// Step GPIO Pin
+const STEP: u8 = 24;
+
+/// Dir GPIO Pin
+const DIR: u8 = 25;
 
 /// All states a controller may have
 #[derive(Debug, Clone, Copy)]
@@ -30,6 +37,11 @@ pub enum ControllerState {
 
 /// The controller state
 pub struct Controller {
+    /// Stepper motor step pin
+    step: OutputPin,
+    /// Stepper motor dir pin
+    dir: OutputPin,
+
     /// The PID
     read_pid: c_int,
     /// Current controller state
@@ -59,7 +71,17 @@ pub fn read_exact(pid: c_int, buf: &mut [u8], len: usize) {
 impl Controller {
     /// Creates a new controller
     pub fn new(read_pid: c_int) -> Self {
+        let gpio = Gpio::new().expect("Failed to init GPIO");
         Self {
+            step: gpio
+                .get(STEP)
+                .expect("Failed to get step pin")
+                .into_output(),
+            dir: gpio
+                .get(DIR)
+                .expect("Failed to get the dir pin")
+                .into_output(),
+
             read_pid,
             state: ControllerState::AwaitingMagic,
             opcode: OpCode::NoOp,
