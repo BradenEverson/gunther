@@ -43,7 +43,7 @@ pub struct Controller {
     dir: OutputPin,
 
     /// The PID
-    read_pid: c_int,
+    read_fid: c_int,
     /// Current controller state
     state: ControllerState,
     /// OpCode
@@ -55,22 +55,22 @@ pub struct Controller {
 }
 
 /// Read into a buffer
-pub fn read(pid: c_int, buf: &mut [u8]) -> usize {
-    unsafe { libc::read(pid, buf.as_mut_ptr() as *mut c_void, buf.len()) as usize }
+pub fn read(fid: c_int, buf: &mut [u8]) -> usize {
+    unsafe { libc::read(fid, buf.as_mut_ptr() as *mut c_void, buf.len()) as usize }
 }
 
 /// Block and wait until we read an exact number of bytes
-pub fn read_exact(pid: c_int, buf: &mut [u8], len: usize) {
+pub fn read_exact(fid: c_int, buf: &mut [u8], len: usize) {
     let mut curr = 0;
 
     while curr < len {
-        curr += read(pid, &mut buf[curr..])
+        curr += read(fid, &mut buf[curr..])
     }
 }
 
 impl Controller {
     /// Creates a new controller
-    pub fn new(read_pid: c_int) -> Self {
+    pub fn new(read_fid: c_int) -> Self {
         let gpio = Gpio::new().expect("Failed to init GPIO");
         Self {
             step: gpio
@@ -82,7 +82,7 @@ impl Controller {
                 .expect("Failed to get the dir pin")
                 .into_output(),
 
-            read_pid,
+            read_fid,
             state: ControllerState::AwaitingMagic,
             opcode: OpCode::NoOp,
             len: 0,
@@ -91,11 +91,11 @@ impl Controller {
     }
 
     /// Steps once through the controller state
-    pub fn controller_step(&mut self) {
+    pub fn step(&mut self) {
         match self.state {
             ControllerState::AwaitingMagic => {
                 let mut header_buf = [0u8];
-                read_exact(self.read_pid, &mut header_buf, 1);
+                read_exact(self.read_fid, &mut header_buf, 1);
 
                 if header_buf[0] == MAGIC_NUMBER {
                     self.state = ControllerState::AwaitingHeader
@@ -103,7 +103,7 @@ impl Controller {
             }
             ControllerState::AwaitingHeader => {
                 let mut header_buf = [0u8; HEADER_LEN];
-                read_exact(self.read_pid, &mut header_buf, HEADER_LEN);
+                read_exact(self.read_fid, &mut header_buf, HEADER_LEN);
 
                 if let Ok(op) = OpCode::try_from(header_buf[0]) {
                     self.opcode = op;
@@ -117,7 +117,7 @@ impl Controller {
             }
             ControllerState::AwaitingPayload => {
                 read_exact(
-                    self.read_pid,
+                    self.read_fid,
                     &mut self.payload[0..(self.len as usize)],
                     self.len as usize,
                 );

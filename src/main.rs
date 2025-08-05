@@ -1,8 +1,8 @@
 //! Main system that creates two controller and commander processes that communicate via a UNIX
 //! pipe
 
-use gunther::controller::Controller;
-use libc::{_exit, c_void, close, fork, pipe, write};
+use gunther::{commander::Commander, controller::Controller};
+use libc::{close, fork, pipe};
 
 fn main() {
     let mut fds = [0; 2];
@@ -18,17 +18,17 @@ fn main() {
     let pid = unsafe { fork() };
     match pid {
         -1 => panic!("Fork failed"),
-        0 => unsafe {
-            close(read_end);
-            let msg: &[u8] = &[0x72, 0x02, 0x00, 0x02, 0x03, 0xE8, 1];
-            write(write_end, msg.as_ptr() as *const c_void, msg.len());
-            loop {}
-        },
+        0 => {
+            unsafe { close(read_end) };
+            let commander = Commander::new(write_end);
+            commander.process();
+        }
         _ => {
+            unsafe { close(write_end) };
             let mut controller = Controller::new(read_end);
 
             loop {
-                controller.controller_step();
+                controller.step();
             }
         }
     }
