@@ -1,5 +1,7 @@
 //! A command sender for the turret
 
+use std::time::Duration;
+
 use libc::c_void;
 
 /// The command sender's state
@@ -20,9 +22,14 @@ impl Commander {
 
     /// Entire commander's process
     pub fn process(&self) {
-        let msg: &[u8] = &[0x72, 0x02, 0x00, 0x02, 0x03, 0xE8, 1];
-        write(self.write_fid, msg);
+        let shoot: &[u8] = &[0x72, 0x05, 0x00, 0x00];
+        let stop: &[u8] = &[0x72, 0x06, 0x00, 0x00];
 
-        loop {}
+        loop {
+            write(self.write_fid, shoot);
+            std::thread::sleep(Duration::from_millis(5000));
+            write(self.write_fid, stop);
+            std::thread::sleep(Duration::from_millis(5000));
+        }
     }
 }

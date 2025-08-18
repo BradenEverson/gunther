@@ -22,6 +22,12 @@ const STEP: u8 = 24;
 /// Dir GPIO Pin
 const DIR: u8 = 25;
 
+/// Trigger GPIO Pin
+const TRIGGER: u8 = 23;
+
+/// Rev Trigger Pin
+const REV: u8 = 22;
+
 /// All states a controller may have
 #[derive(Debug, Clone, Copy)]
 pub enum ControllerState {
@@ -41,6 +47,11 @@ pub struct Controller {
     step: OutputPin,
     /// Stepper motor dir pin
     dir: OutputPin,
+
+    /// Rev Mosfet Pin
+    rev: OutputPin,
+    /// Trigger Mosfet Pin
+    trigger: OutputPin,
 
     /// The PID
     read_fid: c_int,
@@ -73,10 +84,18 @@ impl Controller {
     pub fn new(read_fid: c_int) -> Self {
         let gpio = Gpio::new().expect("Failed to init GPIO");
         Self {
+            rev: gpio.get(REV).expect("Failed to get REV pin").into_output(),
+
+            trigger: gpio
+                .get(TRIGGER)
+                .expect("Failed to get Trigger pin")
+                .into_output(),
+
             step: gpio
                 .get(STEP)
                 .expect("Failed to get step pin")
                 .into_output(),
+
             dir: gpio
                 .get(DIR)
                 .expect("Failed to get the dir pin")

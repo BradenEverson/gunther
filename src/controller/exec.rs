@@ -59,10 +59,15 @@ impl Controller {
             OpCode::StartShoot => {
                 // Start shooting
                 // [ no payload ]
+                self.rev.set_high();
+                std::thread::sleep(Duration::from_millis(500));
+                self.trigger.set_high();
             }
             OpCode::EndShoot => {
                 // Stop shooting
                 // [ no payload ]
+                self.rev.set_low();
+                self.trigger.set_low();
             }
         }
     }
