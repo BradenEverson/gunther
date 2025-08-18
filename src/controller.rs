@@ -2,6 +2,7 @@
 
 use libc::{c_int, c_void};
 use opcode::OpCode;
+use pca9685_rppal::Pca9685;
 use rppal::gpio::{Gpio, OutputPin};
 
 pub mod exec;
@@ -48,6 +49,9 @@ pub struct Controller {
     /// Stepper motor dir pin
     dir: OutputPin,
 
+    /// PCA9865 with the Y-Axis servo
+    servos: Pca9685,
+
     /// Rev Mosfet Pin
     rev: OutputPin,
     /// Trigger Mosfet Pin
@@ -83,7 +87,11 @@ impl Controller {
     /// Creates a new controller
     pub fn new(read_fid: c_int) -> Self {
         let gpio = Gpio::new().expect("Failed to init GPIO");
+        let mut pca = Pca9685::new().expect("Failed to init PCA9865");
+        pca.set_pwm_freq(50.0).expect("Set frequency");
+
         Self {
+            servos: pca,
             rev: gpio.get(REV).expect("Failed to get REV pin").into_output(),
 
             trigger: gpio

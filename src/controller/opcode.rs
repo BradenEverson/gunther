@@ -10,10 +10,8 @@ pub enum OpCode {
     Left = 0x01,
     /// Move stepper right
     Right = 0x02,
-    /// Move servo up
-    Up = 0x03,
-    /// Move servo down
-    Down = 0x04,
+    /// Move servo
+    YAxis = 0x04,
     /// Start shooting
     StartShoot = 0x05,
     /// Stop shooting
@@ -30,8 +28,7 @@ impl TryFrom<u8> for OpCode {
             0x00 => Ok(Self::NoOp),
             0x01 => Ok(Self::Left),
             0x02 => Ok(Self::Right),
-            0x03 => Ok(Self::Up),
-            0x04 => Ok(Self::Down),
+            0x04 => Ok(Self::YAxis),
             0x05 => Ok(Self::StartShoot),
             0x06 => Ok(Self::EndShoot),
             _ => Err(UnknownOp),

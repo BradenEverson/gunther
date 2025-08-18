@@ -5,6 +5,7 @@ edition = "2024"
 
 [dependencies]
 libc = "0.2.174"
+pca9685-rppal = "0.1.0"
 rppal = "0.22.1"
 
 [lints.rust]

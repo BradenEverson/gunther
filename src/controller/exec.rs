@@ -2,7 +2,27 @@
 
 use std::time::Duration;
 
+use pca9685_rppal::Pca9685;
+
 use super::{Controller, opcode::OpCode};
+
+/// Minimum pulse length
+const SERVO_MIN: f32 = 500.0;
+/// Maximum pulse length
+const SERVO_MAX: f32 = 2500.0;
+
+fn map_angle_to_pulse(angle: f32) -> f32 {
+    let input_min = 0.0;
+    let input_max = 180.0;
+    SERVO_MIN + (angle - input_min) * (SERVO_MAX - SERVO_MIN) / (input_max - input_min)
+}
+
+fn move_servo(pca: &mut Pca9685, idx: u8, angle: f32) -> rppal::i2c::Result<()> {
+    let len = map_angle_to_pulse(angle);
+    pca.set_pwm(idx, 0, len as u16)?;
+
+    Ok(())
+}
 
 impl Controller {
     /// Execute once a payload and opcode are parsed
@@ -46,15 +66,19 @@ impl Controller {
                     std::thread::sleep(delay_ms);
                 }
             }
-            OpCode::Up => {
-                // Move servo up
+
+            OpCode::YAxis => {
+                // Move Y-Axis
                 // [ angle         ]
                 // [ 4 bytes (f32) ]
-            }
-            OpCode::Down => {
-                // Move servo down
-                // [ angle         ]
-                // [ 4 bytes (f32) ]
+                let steps = f32::from_be_bytes([
+                    self.payload[0],
+                    self.payload[1],
+                    self.payload[2],
+                    self.payload[3],
+                ]);
+
+                move_servo(&mut self.servos, 3, steps).expect("Move servo");
             }
             OpCode::StartShoot => {
                 // Start shooting
