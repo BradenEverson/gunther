@@ -6,28 +6,22 @@ use pca9685_rppal::Pca9685;
 
 use super::{Controller, opcode::OpCode};
 
-fn move_servo(pca: &mut Pca9685, idx: u8, angle: u16) -> rppal::i2c::Result<()> {
-    let pulse_len_in_ticks = angle_to_ticks(angle);
-    pca.set_pwm(idx, 0, pulse_len_in_ticks)?;
+const MIN_PULSE_US: f32 = 500.0;
+const MAX_PULSE_US: f32 = 2500.0;
+const ACTUATION_RANGE: f32 = 180.0;
 
-    Ok(())
+fn angle_to_ticks(angle: f32) -> u16 {
+    let pulse_us = MIN_PULSE_US + (angle / ACTUATION_RANGE) * (MAX_PULSE_US - MIN_PULSE_US);
+
+    let ticks = (pulse_us * 4096.0) / 20_000.0;
+
+    ticks.round() as u16
 }
 
-const PCA9685_FREQUENCY_HZ: f32 = 50.0;
-
-const TICK_PERIOD_US: f32 = 1_000_000.0 / (PCA9685_FREQUENCY_HZ * 4096.0);
-
-fn us_to_ticks(us: f32) -> u16 {
-    (us / TICK_PERIOD_US) as u16
-}
-
-fn angle_to_ticks(angle: u16) -> u16 {
-    const MIN_PULSE_US: f32 = 1000.0;
-    const MAX_PULSE_US: f32 = 2000.0;
-
-    let pulse_us = MIN_PULSE_US + (angle as f32 / 180.0) * (MAX_PULSE_US - MIN_PULSE_US);
-
-    us_to_ticks(pulse_us)
+fn set_servo_angle(pca: &mut Pca9685, channel: u8, angle: f32) {
+    let off_tick = angle_to_ticks(angle);
+    pca.set_pwm(channel, 0, off_tick)
+        .expect("Failed to set PWM");
 }
 
 impl Controller {
@@ -79,7 +73,7 @@ impl Controller {
                 // [ 2 bytes (u16) ]
                 let angle = u16::from_be_bytes([self.payload[0], self.payload[1]]);
 
-                move_servo(&mut self.servos, 3, angle).expect("Move servo");
+                set_servo_angle(&mut self.servos, 3, angle as f32);
             }
             OpCode::StartShoot => {
                 // Start shooting
