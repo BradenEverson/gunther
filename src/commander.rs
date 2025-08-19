@@ -1,8 +1,9 @@
 //! A command sender for the turret
 
-use std::time::Duration;
+pub mod op;
 
 use libc::c_void;
+use op::Op;
 
 /// The command sender's state
 pub struct Commander {
@@ -20,23 +21,19 @@ impl Commander {
         Self { write_fid }
     }
 
+    /// Send a sequence of commands
+    pub fn send(&self, cmds: &[Op]) {
+        let mut buf = vec![];
+        for cmd in cmds {
+            cmd.write_to_buf(&mut buf);
+        }
+
+        write(self.write_fid, &buf);
+    }
+
     /// Entire commander's process
     pub fn process(&self) {
-        let shoot: &[u8] = &[0x72, 0x05, 0x00, 0x00];
-        let stop: &[u8] = &[0x72, 0x06, 0x00, 0x00];
-
-        let angle = 90u16;
-        let payload = angle.to_be_bytes();
-
-        let angle: &[u8] = &[0x72, 0x04, 0x00, 0x02, payload[0], payload[1]];
-
-        write(self.write_fid, angle);
-
-        loop {
-            // write(self.write_fid, shoot);
-            // std::thread::sleep(Duration::from_millis(5000));
-            // write(self.write_fid, stop);
-            // std::thread::sleep(Duration::from_millis(5000));
-        }
+        self.send(&[Op::SetStepperAngle(160), Op::StartShoot]);
+        loop {}
     }
 }

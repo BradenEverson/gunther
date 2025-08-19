@@ -12,10 +12,10 @@ pub mod opcode;
 const HEADER_LEN: usize = 3;
 
 /// How large the largest opcode payload could possibly be
-const MAX_PAYLOAD: usize = 4;
+const MAX_PAYLOAD: usize = 3;
 
 /// Magic number that starts all payloads
-const MAGIC_NUMBER: u8 = 0x72;
+pub const MAGIC_NUMBER: u8 = 0x72;
 
 /// Step GPIO Pin
 const STEP: u8 = 24;

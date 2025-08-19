@@ -67,7 +67,7 @@ impl Controller {
                 }
             }
 
-            OpCode::YAxis => {
+            OpCode::SetStepperAngle => {
                 // Move Y-Axis
                 // [ angle         ]
                 // [ 2 bytes (u16) ]
