@@ -6,22 +6,28 @@ use pca9685_rppal::Pca9685;
 
 use super::{Controller, opcode::OpCode};
 
-/// Minimum pulse length
-const SERVO_MIN: f32 = 500.0;
-/// Maximum pulse length
-const SERVO_MAX: f32 = 2500.0;
-
-fn map_angle_to_pulse(angle: f32) -> f32 {
-    let input_min = 0.0;
-    let input_max = 180.0;
-    SERVO_MIN + (angle - input_min) * (SERVO_MAX - SERVO_MIN) / (input_max - input_min)
-}
-
-fn move_servo(pca: &mut Pca9685, idx: u8, angle: f32) -> rppal::i2c::Result<()> {
-    let len = map_angle_to_pulse(angle);
-    pca.set_pwm(idx, 0, len as u16)?;
+fn move_servo(pca: &mut Pca9685, idx: u8, angle: u16) -> rppal::i2c::Result<()> {
+    let pulse_len_in_ticks = angle_to_ticks(angle);
+    pca.set_pwm(idx, 0, pulse_len_in_ticks)?;
 
     Ok(())
+}
+
+const PCA9685_FREQUENCY_HZ: f32 = 50.0;
+
+const TICK_PERIOD_US: f32 = 1_000_000.0 / (PCA9685_FREQUENCY_HZ * 4096.0);
+
+fn us_to_ticks(us: f32) -> u16 {
+    (us / TICK_PERIOD_US) as u16
+}
+
+fn angle_to_ticks(angle: u16) -> u16 {
+    const MIN_PULSE_US: f32 = 1000.0;
+    const MAX_PULSE_US: f32 = 2000.0;
+
+    let pulse_us = MIN_PULSE_US + (angle as f32 / 180.0) * (MAX_PULSE_US - MIN_PULSE_US);
+
+    us_to_ticks(pulse_us)
 }
 
 impl Controller {
@@ -70,15 +76,10 @@ impl Controller {
             OpCode::YAxis => {
                 // Move Y-Axis
                 // [ angle         ]
-                // [ 4 bytes (f32) ]
-                let steps = f32::from_be_bytes([
-                    self.payload[0],
-                    self.payload[1],
-                    self.payload[2],
-                    self.payload[3],
-                ]);
+                // [ 2 bytes (u16) ]
+                let angle = u16::from_be_bytes([self.payload[0], self.payload[1]]);
 
-                move_servo(&mut self.servos, 3, steps).expect("Move servo");
+                move_servo(&mut self.servos, 3, angle).expect("Move servo");
             }
             OpCode::StartShoot => {
                 // Start shooting

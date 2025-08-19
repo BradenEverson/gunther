@@ -25,11 +25,18 @@ impl Commander {
         let shoot: &[u8] = &[0x72, 0x05, 0x00, 0x00];
         let stop: &[u8] = &[0x72, 0x06, 0x00, 0x00];
 
+        let angle = 90u16;
+        let payload = angle.to_be_bytes();
+
+        let angle: &[u8] = &[0x72, 0x04, 0x00, 0x02, payload[0], payload[1]];
+
+        write(self.write_fid, angle);
+
         loop {
-            write(self.write_fid, shoot);
-            std::thread::sleep(Duration::from_millis(5000));
-            write(self.write_fid, stop);
-            std::thread::sleep(Duration::from_millis(5000));
+            // write(self.write_fid, shoot);
+            // std::thread::sleep(Duration::from_millis(5000));
+            // write(self.write_fid, stop);
+            // std::thread::sleep(Duration::from_millis(5000));
         }
     }
 }
