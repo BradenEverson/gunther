@@ -39,7 +39,7 @@ impl Controller {
                 self.dir.set_low();
 
                 let steps = u16::from_be_bytes([self.payload[0], self.payload[1]]);
-                let delay_ms = Duration::from_millis(self.payload[2] as u64);
+                let delay_ms = Duration::from_micros(self.payload[2] as u64);
 
                 for _ in 0..steps {
                     self.step.set_high();
@@ -56,7 +56,7 @@ impl Controller {
                 self.dir.set_high();
 
                 let steps = u16::from_be_bytes([self.payload[0], self.payload[1]]);
-                let delay_ms = Duration::from_millis(self.payload[2] as u64);
+                let delay_ms = Duration::from_micros(self.payload[2] as u64);
 
                 for _ in 0..steps {
                     self.step.set_high();

@@ -33,7 +33,6 @@ impl Commander {
 
     /// Entire commander's process
     pub fn process(&self) {
-        self.send(&[Op::SetStepperAngle(160), Op::StartShoot]);
         loop {}
     }
 }
