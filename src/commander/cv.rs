@@ -137,18 +137,26 @@ impl Commander {
 
                     match tp.x {
                         0.0..0.2 => {
+                            self.send(&[Op::StopShoot]);
                             self.send(&[Op::Right(20, 10)]);
                         }
-                        0.2..0.4 => {
+                        0.2..0.35 => {
                             self.send(&[Op::Right(10, 100)]);
                         }
-                        0.4..0.6 => {
-                            self.send(&[Op::StartShoot]);
+                        0.35..0.45 => {
+                            self.send(&[Op::Right(1, 10)]);
                         }
-                        0.6..0.8 => {
+                        0.45..0.55 => {
+                            // self.send(&[Op::StartShoot]);
+                        }
+                        0.55..0.65 => {
+                            self.send(&[Op::Left(1, 10)]);
+                        }
+                        0.65..0.8 => {
                             self.send(&[Op::Left(10, 100)]);
                         }
                         _ => {
+                            self.send(&[Op::StopShoot]);
                             self.send(&[Op::Left(20, 10)]);
                         }
                     }
