@@ -1,6 +1,7 @@
 //! A command sender for the turret
 
 pub mod op;
+pub mod process;
 
 use libc::c_void;
 use op::Op;
@@ -29,18 +30,5 @@ impl Commander {
         }
 
         write(self.write_fid, &buf);
-    }
-
-    /// Entire commander's process
-    pub fn process(&self) {
-        self.send(&[Op::StartShoot]);
-        std::thread::sleep(std::time::Duration::from_millis(1000));
-        self.send(&[Op::Right(50_000, 1)]);
-        std::thread::sleep(std::time::Duration::from_millis(5000));
-
-        std::thread::sleep(std::time::Duration::from_millis(5000));
-        self.send(&[Op::StopShoot]);
-
-        loop {}
     }
 }
