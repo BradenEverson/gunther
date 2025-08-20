@@ -86,12 +86,9 @@ impl Commander {
                         let kp_conf = predictions[[0, offset + 2, idx]];
 
                         if kp_conf > 0.2 {
-                            keypoints.push(KeyPoint { x, y });
+                            keypoints.push(Some(KeyPoint { x, y }));
                         } else {
-                            keypoints.push(KeyPoint {
-                                x: f32::NAN,
-                                y: f32::NAN,
-                            });
+                            keypoints.push(None);
                         }
                     }
 
@@ -102,16 +99,18 @@ impl Commander {
             if detections.len() > 0 {
                 let detection = &detections[0];
                 for kp in &detection.keypoints {
-                    imgproc::circle(
-                        &mut frame,
-                        opencv::core::Point::new(kp.x as i32, kp.y as i32),
-                        1,
-                        opencv::core::Scalar::new(0.0, 255.0, 0.0, 0.0),
-                        2,
-                        LINE_8,
-                        0,
-                    )
-                    .expect("circle");
+                    if let Some(key) = kp {
+                        imgproc::circle(
+                            &mut frame,
+                            opencv::core::Point::new(key.x as i32, key.y as i32),
+                            1,
+                            opencv::core::Scalar::new(0.0, 255.0, 0.0, 0.0),
+                            2,
+                            LINE_8,
+                            0,
+                        )
+                        .expect("circle");
+                    }
                 }
             }
 
@@ -157,7 +156,7 @@ fn preprocess_frame(frame: &Mat) -> opencv::Result<Array4<f32>> {
 
 #[derive(Debug)]
 struct PoseDetection {
-    keypoints: Vec<KeyPoint>,
+    keypoints: Vec<Option<KeyPoint>>,
 }
 
 #[derive(Debug)]
