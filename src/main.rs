@@ -20,7 +20,7 @@ fn main() {
         -1 => panic!("Fork failed"),
         0 => {
             unsafe { close(read_end) };
-            let commander = Commander::new(write_end);
+            let mut commander = Commander::new(write_end);
             commander.process();
         }
         _ => {

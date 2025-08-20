@@ -1,8 +1,9 @@
 //! A command sender for the turret
 
+pub mod cv;
 pub mod op;
-pub mod process;
 
+use cv::pose::KeyPoint;
 use libc::c_void;
 use op::Op;
 
@@ -10,6 +11,10 @@ use op::Op;
 pub struct Commander {
     /// Write end of the communication pipe
     write_fid: i32,
+    /// Current known position of person
+    position: KeyPoint,
+    /// If we don't see the person, how many frames has it been like this?
+    frames_without_seen: u32,
 }
 
 fn write(fid: i32, msg: &[u8]) {
@@ -19,7 +24,12 @@ fn write(fid: i32, msg: &[u8]) {
 impl Commander {
     /// Creates a new commander state
     pub fn new(write_fid: i32) -> Self {
-        Self { write_fid }
+        Self {
+            write_fid,
+            // Start by looking in middle position and to the left
+            position: KeyPoint { x: 1.0, y: 0.5 },
+            frames_without_seen: 0,
+        }
     }
 
     /// Send a sequence of commands

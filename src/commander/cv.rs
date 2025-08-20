@@ -1,5 +1,7 @@
 //! CV Implementation
 
+pub mod pose;
+
 use super::{Commander, op::Op};
 use core::f32;
 
@@ -12,6 +14,7 @@ use opencv::{
     videoio,
 };
 use ort::session::Session;
+use pose::{KeyPoint, LEFT_SHOULDER, NOSE, PoseDetection, RIGHT_SHOULDER};
 
 const SIZE: i32 = 320;
 
@@ -21,7 +24,7 @@ fn translate_to_new(val: f32, old: i32, new: i32) -> f32 {
 
 impl Commander {
     /// Entire commander's process
-    pub fn process(&self) {
+    pub fn process(&mut self) {
         highgui::named_window("window", highgui::WINDOW_FULLSCREEN)
             .expect("Oh no couldn't make a window");
 
@@ -74,7 +77,7 @@ impl Commander {
                 let confidence = predictions[[0, 4, idx]];
 
                 if confidence > 0.5 {
-                    let mut keypoints = Vec::new();
+                    let mut keypoints = [None; 17];
                     for kp_idx in 0..17 {
                         let offset = 5 + kp_idx * 3;
                         let x = predictions[[0, offset, idx]];
@@ -86,9 +89,7 @@ impl Commander {
                         let kp_conf = predictions[[0, offset + 2, idx]];
 
                         if kp_conf > 0.2 {
-                            keypoints.push(Some(KeyPoint { x, y }));
-                        } else {
-                            keypoints.push(None);
+                            keypoints[kp_idx] = Some(KeyPoint { x, y });
                         }
                     }
 
@@ -98,20 +99,64 @@ impl Commander {
 
             if detections.len() > 0 {
                 let detection = &detections[0];
-                for kp in &detection.keypoints {
+                for kp in &detection.keypoints[1..] {
                     if let Some(key) = kp {
                         imgproc::circle(
                             &mut frame,
                             opencv::core::Point::new(key.x as i32, key.y as i32),
-                            1,
-                            opencv::core::Scalar::new(0.0, 255.0, 0.0, 0.0),
                             2,
+                            opencv::core::Scalar::new(0.0, 255.0, 0.0, 0.0),
+                            5,
                             LINE_8,
                             0,
                         )
                         .expect("circle");
                     }
                 }
+
+                if let Some(tracking_point) =
+                    detection.get_avg(&[NOSE, LEFT_SHOULDER, RIGHT_SHOULDER])
+                {
+                    let mut tp = tracking_point;
+
+                    tp.y += 50.0;
+
+                    imgproc::circle(
+                        &mut frame,
+                        opencv::core::Point::new(tracking_point.x as i32, tracking_point.y as i32),
+                        5,
+                        opencv::core::Scalar::new(0.0, 0.0, 255.0, 0.0),
+                        5,
+                        LINE_8,
+                        0,
+                    )
+                    .expect("circle");
+
+                    tp.x = translate_to_new(tp.x, width, 1);
+                    tp.y = translate_to_new(tp.y, height, 1);
+
+                    match tp.x {
+                        0.0..0.2 => {
+                            self.send(&[Op::Right(20, 10)]);
+                        }
+                        0.2..0.4 => {
+                            self.send(&[Op::Right(10, 100)]);
+                        }
+                        0.4..0.6 => {
+                            self.send(&[Op::StartShoot]);
+                        }
+                        0.6..0.8 => {
+                            self.send(&[Op::Left(10, 100)]);
+                        }
+                        _ => {
+                            self.send(&[Op::Left(20, 10)]);
+                        }
+                    }
+                } else {
+                    self.frames_without_seen += 1;
+                }
+
+                detection.draw_body(&mut frame);
             }
 
             highgui::imshow("window", &frame).expect("Oh no couldn't show image to GUI");
@@ -152,15 +197,4 @@ fn preprocess_frame(frame: &Mat) -> opencv::Result<Array4<f32>> {
     }
 
     Ok(array)
-}
-
-#[derive(Debug)]
-struct PoseDetection {
-    keypoints: Vec<Option<KeyPoint>>,
-}
-
-#[derive(Debug)]
-struct KeyPoint {
-    x: f32,
-    y: f32,
 }
