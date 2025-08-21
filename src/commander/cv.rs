@@ -100,20 +100,6 @@ impl Commander {
 
             if detections.len() > 0 {
                 let detection = &detections[0];
-                for kp in &detection.keypoints[1..] {
-                    if let Some(key) = kp {
-                        imgproc::circle(
-                            &mut frame,
-                            opencv::core::Point::new(key.x as i32, key.y as i32),
-                            2,
-                            opencv::core::Scalar::new(0.0, 255.0, 0.0, 0.0),
-                            5,
-                            LINE_8,
-                            0,
-                        )
-                        .expect("circle");
-                    }
-                }
 
                 if let Some(tracking_point) =
                     detection.get_avg(&[NOSE, LEFT_SHOULDER, RIGHT_SHOULDER])
@@ -137,36 +123,47 @@ impl Commander {
                     tp.x = translate_to_new(tp.x, width, 1);
                     tp.y = translate_to_new(tp.y, height, 1);
 
-                    match tp.x {
-                        0.0..0.2 => {
-                            self.send(&[Op::Right(1000, 1)]);
-                            std::thread::sleep(Duration::from_micros(1000))
-                        }
-                        0.2..0.35 => {
-                            self.send(&[Op::Right(400, 1)]);
-                            std::thread::sleep(Duration::from_micros(400))
-                        }
-                        0.35..0.45 => {
-                            self.send(&[Op::Right(100, 1)]);
-                            std::thread::sleep(Duration::from_micros(100))
-                        }
-                        0.45..0.55 => {
-                            self.shoot();
-                            std::thread::sleep(Duration::from_millis(500))
-                        }
-                        0.55..0.65 => {
-                            self.send(&[Op::Left(100, 1)]);
-                            std::thread::sleep(Duration::from_micros(100))
-                        }
-                        0.65..0.8 => {
-                            self.send(&[Op::Left(400, 1)]);
-                            std::thread::sleep(Duration::from_micros(400))
-                        }
-                        _ => {
-                            self.send(&[Op::Left(1000, 1)]);
-                            std::thread::sleep(Duration::from_micros(1000))
-                        }
+                    let error = tp.x - 0.5;
+                    let speed = (error.abs() * 2000.0) as u16;
+                    let duration = Duration::from_micros(speed as u64);
+
+                    if error > 0.0 {
+                        self.send(&[Op::Right(speed, 1)]);
+                    } else {
+                        self.send(&[Op::Left(speed, 1)]);
                     }
+                    std::thread::sleep(duration);
+
+                    // match tp.x {
+                    //     0.0..0.2 => {
+                    //         self.send(&[Op::Right(1000, 1)]);
+                    //         std::thread::sleep(Duration::from_micros(1000))
+                    //     }
+                    //     0.2..0.35 => {
+                    //         self.send(&[Op::Right(400, 1)]);
+                    //         std::thread::sleep(Duration::from_micros(400))
+                    //     }
+                    //     0.35..0.45 => {
+                    //         self.send(&[Op::Right(100, 1)]);
+                    //         std::thread::sleep(Duration::from_micros(100))
+                    //     }
+                    //     0.45..0.55 => {
+                    //         self.shoot();
+                    //         std::thread::sleep(Duration::from_millis(500))
+                    //     }
+                    //     0.55..0.65 => {
+                    //         self.send(&[Op::Left(100, 1)]);
+                    //         std::thread::sleep(Duration::from_micros(100))
+                    //     }
+                    //     0.65..0.8 => {
+                    //         self.send(&[Op::Left(400, 1)]);
+                    //         std::thread::sleep(Duration::from_micros(400))
+                    //     }
+                    //     _ => {
+                    //         self.send(&[Op::Left(1000, 1)]);
+                    //         std::thread::sleep(Duration::from_micros(1000))
+                    //     }
+                    // }
                 }
                 detection.draw_body(&mut frame);
             } else {
@@ -176,8 +173,8 @@ impl Commander {
                     self.stop_shoot();
                 }
 
-                self.send(&[Op::Right(1500, 1)]);
-                std::thread::sleep(Duration::from_micros(1500));
+                self.send(&[Op::Right(500, 1)]);
+                std::thread::sleep(Duration::from_micros(500));
             }
 
             highgui::imshow("window", &frame).expect("Oh no couldn't show image to GUI");
