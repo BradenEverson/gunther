@@ -3,7 +3,6 @@
 pub mod cv;
 pub mod op;
 
-use cv::pose::KeyPoint;
 use libc::c_void;
 use op::Op;
 
