@@ -125,44 +125,44 @@ impl Commander {
 
                     match tp.x {
                         0.0..0.2 => {
-                            self.send(&[Op::Right(1000, 1)]);
-                            std::thread::sleep(Duration::from_micros(1000))
+                            self.send(&[Op::Right(800, 1)]);
+                            std::thread::sleep(Duration::from_micros(800))
                         }
                         0.2..0.35 => {
                             self.send(&[Op::Right(400, 1)]);
                             std::thread::sleep(Duration::from_micros(400))
                         }
                         0.35..0.45 => {
-                            self.send(&[Op::Right(100, 1)]);
-                            std::thread::sleep(Duration::from_micros(100))
+                            self.send(&[Op::Right(200, 1)]);
+                            std::thread::sleep(Duration::from_micros(200))
                         }
                         0.45..0.55 => {
                             self.shoot();
                         }
                         0.55..0.65 => {
-                            self.send(&[Op::Left(100, 1)]);
-                            std::thread::sleep(Duration::from_micros(100))
+                            self.send(&[Op::Left(200, 1)]);
+                            std::thread::sleep(Duration::from_micros(200))
                         }
                         0.65..0.8 => {
                             self.send(&[Op::Left(400, 1)]);
                             std::thread::sleep(Duration::from_micros(400))
                         }
                         _ => {
-                            self.send(&[Op::Left(1000, 1)]);
-                            std::thread::sleep(Duration::from_micros(1000))
+                            self.send(&[Op::Left(800, 1)]);
+                            std::thread::sleep(Duration::from_micros(800))
                         }
                     }
                 }
                 detection.draw_body(&mut frame);
             } else {
                 self.frames_without_seen += 1;
-                if self.frames_without_seen > 50 {
+                if self.frames_without_seen > 5 {
                     self.frames_without_seen = 0;
                     self.stop_shoot();
-                }
 
-                self.send(&[Op::Right(100, 1)]);
-                std::thread::sleep(Duration::from_micros(100));
+                    self.send(&[Op::Right(300, 1)]);
+                    std::thread::sleep(Duration::from_micros(300));
+                }
             }
 
             highgui::imshow("window", &frame).expect("Oh no couldn't show image to GUI");
