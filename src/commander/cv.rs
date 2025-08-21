@@ -157,7 +157,6 @@ impl Commander {
             } else {
                 self.frames_without_seen += 1;
                 if self.frames_without_seen > 5 {
-                    self.frames_without_seen = 0;
                     self.stop_shoot();
 
                     self.send(&[Op::Right(300, 1)]);
