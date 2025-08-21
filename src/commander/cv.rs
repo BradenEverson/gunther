@@ -126,14 +126,17 @@ impl Commander {
                     match tp.x {
                         0.0..0.2 => {
                             self.send(&[Op::Right(800, 1)]);
+                            self.last_direction_moved = Op::Right(800, 1);
                             std::thread::sleep(Duration::from_micros(800))
                         }
                         0.2..0.35 => {
                             self.send(&[Op::Right(400, 1)]);
+                            self.last_direction_moved = Op::Right(400, 1);
                             std::thread::sleep(Duration::from_micros(400))
                         }
                         0.35..0.45 => {
                             self.send(&[Op::Right(200, 1)]);
+                            self.last_direction_moved = Op::Right(200, 1);
                             std::thread::sleep(Duration::from_micros(200))
                         }
                         0.45..0.55 => {
@@ -141,14 +144,17 @@ impl Commander {
                         }
                         0.55..0.65 => {
                             self.send(&[Op::Left(200, 1)]);
+                            self.last_direction_moved = Op::Left(200, 1);
                             std::thread::sleep(Duration::from_micros(200))
                         }
                         0.65..0.8 => {
                             self.send(&[Op::Left(400, 1)]);
+                            self.last_direction_moved = Op::Left(400, 1);
                             std::thread::sleep(Duration::from_micros(400))
                         }
                         _ => {
                             self.send(&[Op::Left(800, 1)]);
+                            self.last_direction_moved = Op::Left(800, 1);
                             std::thread::sleep(Duration::from_micros(800))
                         }
                     }
@@ -159,8 +165,13 @@ impl Commander {
                 if self.frames_without_seen > 5 {
                     self.stop_shoot();
 
-                    self.send(&[Op::Right(300, 1)]);
-                    std::thread::sleep(Duration::from_micros(300));
+                    self.send(&[self.last_direction_moved]);
+                    match self.last_direction_moved {
+                        Op::Left(dir, _) | Op::Right(dir, _) => {
+                            std::thread::sleep(Duration::from_micros(dir as u64))
+                        }
+                        _ => unreachable!("We only store directions"),
+                    }
                 }
             }
 

@@ -16,6 +16,8 @@ pub struct Commander {
     shooting: bool,
     /// If we don't see the person, how many frames has it been like this?
     frames_without_seen: u32,
+    /// The last direction we saw the person moving
+    last_direction_moved: Op,
 }
 
 fn write(fid: i32, msg: &[u8]) {
@@ -29,6 +31,7 @@ impl Commander {
             write_fid,
             shooting: false,
             frames_without_seen: 0,
+            last_direction_moved: Op::Left(500, 1),
         }
     }
 
