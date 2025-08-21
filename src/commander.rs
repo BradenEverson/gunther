@@ -3,6 +3,8 @@
 pub mod cv;
 pub mod op;
 
+use std::time::Duration;
+
 use libc::c_void;
 use op::Op;
 
@@ -43,6 +45,7 @@ impl Commander {
         if !self.shooting {
             self.shooting = true;
             self.send(&[Op::StartShoot]);
+            std::thread::sleep(Duration::from_millis(500));
         }
     }
 
