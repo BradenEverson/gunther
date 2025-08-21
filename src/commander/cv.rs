@@ -126,7 +126,7 @@ impl Commander {
                     match tp.x {
                         0.0..0.2 => {
                             self.send(&[Op::Right(800, 1)]);
-                            self.last_direction_moved = Op::Right(800, 1);
+                            self.last_direction_moved = Op::Right(600, 1);
                             std::thread::sleep(Duration::from_micros(800))
                         }
                         0.2..0.35 => {
@@ -154,7 +154,7 @@ impl Commander {
                         }
                         _ => {
                             self.send(&[Op::Left(800, 1)]);
-                            self.last_direction_moved = Op::Left(800, 1);
+                            self.last_direction_moved = Op::Left(600, 1);
                             std::thread::sleep(Duration::from_micros(800))
                         }
                     }
