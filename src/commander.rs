@@ -18,6 +18,8 @@ pub struct Commander {
     frames_without_seen: u32,
     /// The last direction we saw the person moving
     last_direction_moved: Op,
+    /// The current angle
+    angle: u16,
 }
 
 fn write(fid: i32, msg: &[u8]) {
@@ -28,6 +30,7 @@ impl Commander {
     /// Creates a new commander state
     pub fn new(write_fid: i32) -> Self {
         Self {
+            angle: 140,
             write_fid,
             shooting: false,
             frames_without_seen: 0,
@@ -49,6 +52,24 @@ impl Commander {
             self.shooting = true;
             self.send(&[Op::StartShoot]);
             std::thread::sleep(Duration::from_millis(500));
+        }
+    }
+
+    /// Move the servo down
+    pub fn move_down(&mut self, times: usize) {
+        for _ in 0..times {
+            self.angle -= 1;
+            self.send(&[Op::SetStepperAngle(self.angle)]);
+            std::thread::sleep(Duration::from_micros(1))
+        }
+    }
+
+    /// Move the servo up
+    pub fn move_up(&mut self, times: usize) {
+        for _ in 0..times {
+            self.angle += 1;
+            self.send(&[Op::SetStepperAngle(self.angle)]);
+            std::thread::sleep(Duration::from_micros(1))
         }
     }
 

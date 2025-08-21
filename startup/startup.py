@@ -1,5 +1,5 @@
 import time
-import Potentiometer_Turret_Code
+import potentiometer
 from adafruit_servokit import ServoKit
 
 kit = ServoKit(channels=16)
@@ -33,7 +33,12 @@ elif 1.570 < voltage < 2:
     angle = (120)
     kit.servo[3].angle = angle
     time.sleep(.1)
-initilization_angle = 160
+else:
+    angle = (170)
+    kit.servo[3].angle = angle
+    time.sleep(.1)
+
+initilization_angle = 140
 
 while angle != initilization_angle:
     if angle < initilization_angle:
