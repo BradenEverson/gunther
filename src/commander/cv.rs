@@ -4,6 +4,7 @@ pub mod pose;
 
 use super::{Commander, op::Op};
 use core::f32;
+use std::time::Duration;
 
 use ndarray::Array4;
 use opencv::{
@@ -117,6 +118,7 @@ impl Commander {
                 if let Some(tracking_point) =
                     detection.get_avg(&[NOSE, LEFT_SHOULDER, RIGHT_SHOULDER])
                 {
+                    self.frames_without_seen = 0;
                     let mut tp = tracking_point;
 
                     tp.y += 50.0;
@@ -137,31 +139,42 @@ impl Commander {
 
                     match tp.x {
                         0.0..0.2 => {
-                            self.send(&[Op::StopShoot]);
-                            self.send(&[Op::Right(20, 10)]);
+                            self.send(&[Op::Right(1000, 1)]);
+                            std::thread::sleep(Duration::from_micros(1000))
                         }
                         0.2..0.35 => {
-                            self.send(&[Op::Right(10, 100)]);
+                            self.send(&[Op::Right(400, 1)]);
+                            std::thread::sleep(Duration::from_micros(400))
                         }
                         0.35..0.45 => {
-                            self.send(&[Op::Right(1, 10)]);
+                            self.send(&[Op::Right(100, 1)]);
+                            self.shoot();
+                            std::thread::sleep(Duration::from_micros(100))
                         }
                         0.45..0.55 => {
-                            // self.send(&[Op::StartShoot]);
+                            self.shoot();
                         }
                         0.55..0.65 => {
-                            self.send(&[Op::Left(1, 10)]);
+                            self.send(&[Op::Right(100, 1)]);
+                            self.shoot();
+                            std::thread::sleep(Duration::from_micros(100))
                         }
                         0.65..0.8 => {
-                            self.send(&[Op::Left(10, 100)]);
+                            self.send(&[Op::Left(400, 1)]);
+                            std::thread::sleep(Duration::from_micros(400))
                         }
                         _ => {
-                            self.send(&[Op::StopShoot]);
-                            self.send(&[Op::Left(20, 10)]);
+                            self.send(&[Op::Right(1000, 1)]);
+                            std::thread::sleep(Duration::from_micros(1000))
                         }
                     }
                 } else {
+                    self.send(&[Op::Right(1500, 1)]);
                     self.frames_without_seen += 1;
+                    if self.frames_without_seen > 50 {
+                        self.frames_without_seen = 0;
+                        self.stop_shoot();
+                    }
                 }
 
                 detection.draw_body(&mut frame);

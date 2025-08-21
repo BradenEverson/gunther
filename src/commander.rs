@@ -12,7 +12,7 @@ pub struct Commander {
     /// Write end of the communication pipe
     write_fid: i32,
     /// Current known position of person
-    position: KeyPoint,
+    shooting: bool,
     /// If we don't see the person, how many frames has it been like this?
     frames_without_seen: u32,
 }
@@ -26,9 +26,24 @@ impl Commander {
     pub fn new(write_fid: i32) -> Self {
         Self {
             write_fid,
-            // Start by looking in middle position and to the left
-            position: KeyPoint { x: 1.0, y: 0.5 },
+            shooting: false,
             frames_without_seen: 0,
+        }
+    }
+
+    /// Start shooting if not already
+    pub fn stop_shoot(&mut self) {
+        if self.shooting {
+            self.shooting = false;
+            self.send(&[Op::StopShoot]);
+        }
+    }
+
+    /// Start shooting if not already
+    pub fn shoot(&mut self) {
+        if !self.shooting {
+            self.shooting = true;
+            self.send(&[Op::StartShoot]);
         }
     }
 
