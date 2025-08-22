@@ -6,7 +6,7 @@ kit = ServoKit(channels=16)
 
 kit.servo[3].set_pulse_width_range(500, 2500)
 
-voltage = Potentiometer_Turret_Code.read_potentiometer_voltage()
+voltage = potentiometer.read_potentiometer_voltage()
 print(voltage)
 
 if .2 < voltage < .610:

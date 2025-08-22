@@ -124,24 +124,12 @@ impl Commander {
                     tp.y = translate_to_new(tp.y, height, 1);
 
                     match tp.y {
-                        0.0..0.2 => {
-                            self.move_down(5);
-                        }
-                        0.2..0.35 => {
-                            self.move_down(3);
-                        }
-                        0.35..0.45 => {
+                        0.0..0.4 => {
                             self.move_down(1);
                         }
-                        0.45..0.55 => {}
-                        0.55..0.65 => {
-                            self.move_down(1);
-                        }
-                        0.65..0.8 => {
-                            self.move_down(3);
-                        }
+                        0.4..0.65 => {}
                         _ => {
-                            self.move_down(5);
+                            self.move_up(1);
                         }
                     }
 

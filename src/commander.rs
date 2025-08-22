@@ -60,7 +60,6 @@ impl Commander {
         for _ in 0..times {
             self.angle -= 1;
             self.send(&[Op::SetStepperAngle(self.angle)]);
-            std::thread::sleep(Duration::from_micros(1))
         }
     }
 
@@ -69,7 +68,6 @@ impl Commander {
         for _ in 0..times {
             self.angle += 1;
             self.send(&[Op::SetStepperAngle(self.angle)]);
-            std::thread::sleep(Duration::from_micros(1))
         }
     }
 
