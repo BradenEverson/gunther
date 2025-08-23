@@ -133,6 +133,7 @@ impl Commander {
                 }
             }
 
+            // Choose the detected body that is already the closest to the center
             let closest = keypoints
                 .iter()
                 .map(|kp| f32::abs(kp.x - 0.5))
