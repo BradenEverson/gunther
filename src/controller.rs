@@ -26,6 +26,9 @@ const DIR: u8 = 25;
 /// Trigger GPIO Pin
 const TRIGGER: u8 = 23;
 
+/// Trigger GPIO Pin
+const FEED: u8 = 26;
+
 /// Rev Trigger Pin
 const REV: u8 = 22;
 
@@ -48,6 +51,8 @@ pub struct Controller {
     step: OutputPin,
     /// Stepper motor dir pin
     dir: OutputPin,
+    /// Feed signal pin
+    feed: OutputPin,
 
     /// PCA9865 with the Y-Axis servo
     servos: Pca9685,
@@ -97,6 +102,11 @@ impl Controller {
             trigger: gpio
                 .get(TRIGGER)
                 .expect("Failed to get Trigger pin")
+                .into_output(),
+
+            feed: gpio
+                .get(FEED)
+                .expect("Failed to get ammo feed pin")
                 .into_output(),
 
             step: gpio
