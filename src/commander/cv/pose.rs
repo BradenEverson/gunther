@@ -56,6 +56,20 @@ impl PoseDetection {
         Some(res)
     }
 
+    /// If the pose contains hands over their head, we should stop shooting out of the kindness of
+    /// our hearts
+    pub fn give_mercy(&self) -> bool {
+        if let Some(hands_nose) = self.grab_many(&[LEFT_WRIST, RIGHT_WRIST, NOSE]) {
+            let l_wrist = hands_nose[0];
+            let r_wrist = hands_nose[1];
+            let nose = hands_nose[2];
+
+            l_wrist.y > nose.y && r_wrist.y > nose.y
+        } else {
+            false
+        }
+    }
+
     /// Get a point between all valid points
     pub fn avg_all(&self) -> Option<KeyPoint> {
         self.get_avg(&[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16])

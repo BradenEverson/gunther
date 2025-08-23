@@ -123,49 +123,51 @@ impl Commander {
                     tp.x = translate_to_new(tp.x, width, 1);
                     tp.y = translate_to_new(tp.y, height, 1);
 
-                    match tp.y {
-                        0.0..0.4 => {
-                            self.move_down(1);
+                    if !detection.give_mercy() {
+                        match tp.y {
+                            0.0..0.4 => {
+                                self.move_down(1);
+                            }
+                            0.4..0.65 => {}
+                            _ => {
+                                self.move_up(1);
+                            }
                         }
-                        0.4..0.65 => {}
-                        _ => {
-                            self.move_up(1);
-                        }
-                    }
 
-                    match tp.x {
-                        0.0..0.2 => {
-                            self.send(&[Op::Right(800, 1)]);
-                            self.last_direction_moved = Op::Right(600, 1);
-                            std::thread::sleep(Duration::from_micros(800))
-                        }
-                        0.2..0.35 => {
-                            self.send(&[Op::Right(400, 1)]);
-                            self.last_direction_moved = Op::Right(400, 1);
-                            std::thread::sleep(Duration::from_micros(400))
-                        }
-                        0.35..0.45 => {
-                            self.send(&[Op::Right(200, 1)]);
-                            self.last_direction_moved = Op::Right(200, 1);
-                            std::thread::sleep(Duration::from_micros(200))
-                        }
-                        0.45..0.55 => {
-                            self.shoot();
-                        }
-                        0.55..0.65 => {
-                            self.send(&[Op::Left(200, 1)]);
-                            self.last_direction_moved = Op::Left(200, 1);
-                            std::thread::sleep(Duration::from_micros(200))
-                        }
-                        0.65..0.8 => {
-                            self.send(&[Op::Left(400, 1)]);
-                            self.last_direction_moved = Op::Left(400, 1);
-                            std::thread::sleep(Duration::from_micros(400))
-                        }
-                        _ => {
-                            self.send(&[Op::Left(800, 1)]);
-                            self.last_direction_moved = Op::Left(600, 1);
-                            std::thread::sleep(Duration::from_micros(800))
+                        match tp.x {
+                            0.0..0.2 => {
+                                self.send(&[Op::Right(800, 1)]);
+                                self.last_direction_moved = Op::Right(600, 1);
+                                std::thread::sleep(Duration::from_micros(800))
+                            }
+                            0.2..0.35 => {
+                                self.send(&[Op::Right(400, 1)]);
+                                self.last_direction_moved = Op::Right(400, 1);
+                                std::thread::sleep(Duration::from_micros(400))
+                            }
+                            0.35..0.45 => {
+                                self.send(&[Op::Right(200, 1)]);
+                                self.last_direction_moved = Op::Right(200, 1);
+                                std::thread::sleep(Duration::from_micros(200))
+                            }
+                            0.45..0.55 => {
+                                self.shoot();
+                            }
+                            0.55..0.65 => {
+                                self.send(&[Op::Left(200, 1)]);
+                                self.last_direction_moved = Op::Left(200, 1);
+                                std::thread::sleep(Duration::from_micros(200))
+                            }
+                            0.65..0.8 => {
+                                self.send(&[Op::Left(400, 1)]);
+                                self.last_direction_moved = Op::Left(400, 1);
+                                std::thread::sleep(Duration::from_micros(400))
+                            }
+                            _ => {
+                                self.send(&[Op::Left(800, 1)]);
+                                self.last_direction_moved = Op::Left(600, 1);
+                                std::thread::sleep(Duration::from_micros(800))
+                            }
                         }
                     }
                 }
@@ -190,6 +192,7 @@ impl Commander {
             let key =
                 highgui::wait_key(1).expect("Oh no couldn't... wait what I couldn't grab a key?");
             if key == 113 {
+                self.stop_shoot();
                 break;
             }
         }
