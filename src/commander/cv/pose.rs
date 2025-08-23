@@ -64,7 +64,7 @@ impl PoseDetection {
             let r_wrist = hands_nose[1];
             let nose = hands_nose[2];
 
-            l_wrist.y > nose.y && r_wrist.y > nose.y
+            l_wrist.y < nose.y && r_wrist.y < nose.y
         } else {
             false
         }

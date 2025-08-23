@@ -169,6 +169,8 @@ impl Commander {
                                 std::thread::sleep(Duration::from_micros(800))
                             }
                         }
+                    } else {
+                        self.stop_shoot();
                     }
                 }
                 detection.draw_body(&mut frame);
