@@ -98,87 +98,100 @@ impl Commander {
                 }
             }
 
-            if detections.len() > 0 {
-                let detection = &detections[0];
+            let mut keypoints = vec![];
 
-                if let Some(tracking_point) =
-                    detection.get_avg(&[NOSE, LEFT_SHOULDER, RIGHT_SHOULDER])
-                {
-                    self.frames_without_seen = 0;
-                    let mut tp = tracking_point;
+            for detection in detections {
+                if !detection.give_mercy() {
+                    if let Some(tracking_point) =
+                        detection.get_avg(&[NOSE, LEFT_SHOULDER, RIGHT_SHOULDER])
+                    {
+                        self.frames_without_seen = 0;
+                        let mut tp = tracking_point;
 
-                    tp.y += 50.0;
+                        tp.y += 50.0;
 
-                    imgproc::circle(
-                        &mut frame,
-                        opencv::core::Point::new(tracking_point.x as i32, tracking_point.y as i32),
-                        5,
-                        opencv::core::Scalar::new(0.0, 0.0, 255.0, 0.0),
-                        5,
-                        LINE_8,
-                        0,
-                    )
-                    .expect("circle");
+                        imgproc::circle(
+                            &mut frame,
+                            opencv::core::Point::new(
+                                tracking_point.x as i32,
+                                tracking_point.y as i32,
+                            ),
+                            5,
+                            opencv::core::Scalar::new(0.0, 0.0, 255.0, 0.0),
+                            5,
+                            LINE_8,
+                            0,
+                        )
+                        .expect("circle");
 
-                    tp.x = translate_to_new(tp.x, width, 1);
-                    tp.y = translate_to_new(tp.y, height, 1);
+                        tp.x = translate_to_new(tp.x, width, 1);
+                        tp.y = translate_to_new(tp.y, height, 1);
 
-                    if !detection.give_mercy() {
-                        match tp.y {
-                            0.0..0.4 => {
-                                self.move_down(1);
-                            }
-                            0.4..0.65 => {}
-                            _ => {
-                                self.move_up(1);
-                            }
-                        }
-
-                        match tp.x {
-                            0.0..0.2 => {
-                                self.send(&[Op::Right(800, 1)]);
-                                self.last_direction_moved = Op::Right(600, 1);
-                                std::thread::sleep(Duration::from_micros(800))
-                            }
-                            0.2..0.35 => {
-                                self.send(&[Op::Right(400, 1)]);
-                                self.last_direction_moved = Op::Right(400, 1);
-                                std::thread::sleep(Duration::from_micros(400))
-                            }
-                            0.35..0.45 => {
-                                self.send(&[Op::Right(200, 1)]);
-                                self.last_direction_moved = Op::Right(200, 1);
-                                std::thread::sleep(Duration::from_micros(200))
-                            }
-                            0.45..0.55 => {
-                                self.shoot();
-                            }
-                            0.55..0.65 => {
-                                self.send(&[Op::Left(200, 1)]);
-                                self.last_direction_moved = Op::Left(200, 1);
-                                std::thread::sleep(Duration::from_micros(200))
-                            }
-                            0.65..0.8 => {
-                                self.send(&[Op::Left(400, 1)]);
-                                self.last_direction_moved = Op::Left(400, 1);
-                                std::thread::sleep(Duration::from_micros(400))
-                            }
-                            _ => {
-                                self.send(&[Op::Left(800, 1)]);
-                                self.last_direction_moved = Op::Left(600, 1);
-                                std::thread::sleep(Duration::from_micros(800))
-                            }
-                        }
-                    } else {
-                        self.stop_shoot();
+                        keypoints.push(tp);
+                        detection.draw_body(&mut frame);
                     }
                 }
-                detection.draw_body(&mut frame);
+            }
+
+            let closest = keypoints
+                .iter()
+                .map(|kp| f32::abs(kp.x - 0.5))
+                .enumerate()
+                .min_by(|a, b| a.1.partial_cmp(&b.1).unwrap_or(std::cmp::Ordering::Equal));
+
+            if let Some((idx, _)) = closest {
+                let tp = &keypoints[idx];
+
+                match tp.y {
+                    0.0..0.4 => {
+                        self.move_down(1);
+                    }
+                    0.4..0.65 => {}
+                    _ => {
+                        self.move_up(1);
+                    }
+                }
+
+                match tp.x {
+                    0.0..0.2 => {
+                        self.send(&[Op::Right(800, 1)]);
+                        self.last_direction_moved = Op::Right(600, 1);
+                        std::thread::sleep(Duration::from_micros(800))
+                    }
+                    0.2..0.35 => {
+                        self.send(&[Op::Right(400, 1)]);
+                        self.last_direction_moved = Op::Right(400, 1);
+                        std::thread::sleep(Duration::from_micros(400))
+                    }
+                    0.35..0.45 => {
+                        self.send(&[Op::Right(200, 1)]);
+                        self.last_direction_moved = Op::Right(200, 1);
+                        std::thread::sleep(Duration::from_micros(200))
+                    }
+                    0.45..0.55 => {
+                        self.shoot();
+                    }
+                    0.55..0.65 => {
+                        self.send(&[Op::Left(200, 1)]);
+                        self.last_direction_moved = Op::Left(200, 1);
+                        std::thread::sleep(Duration::from_micros(200))
+                    }
+                    0.65..0.8 => {
+                        self.send(&[Op::Left(400, 1)]);
+                        self.last_direction_moved = Op::Left(400, 1);
+                        std::thread::sleep(Duration::from_micros(400))
+                    }
+                    _ => {
+                        self.send(&[Op::Left(800, 1)]);
+                        self.last_direction_moved = Op::Left(600, 1);
+                        std::thread::sleep(Duration::from_micros(800))
+                    }
+                }
             } else {
                 self.frames_without_seen += 1;
-                if self.frames_without_seen > 5 {
-                    self.stop_shoot();
+                self.stop_shoot();
 
+                if self.frames_without_seen > 5 {
                     self.send(&[self.last_direction_moved]);
                     match self.last_direction_moved {
                         Op::Left(dir, _) | Op::Right(dir, _) => {
