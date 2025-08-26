@@ -38,7 +38,7 @@ else:
     kit.servo[3].angle = angle
     time.sleep(.1)
 
-initilization_angle = 140
+initilization_angle = 150
 
 while angle != initilization_angle:
     if angle < initilization_angle:

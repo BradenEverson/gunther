@@ -30,7 +30,7 @@ impl Commander {
     /// Creates a new commander state
     pub fn new(write_fid: i32) -> Self {
         Self {
-            angle: 140,
+            angle: 150,
             write_fid,
             shooting: false,
             frames_without_seen: 0,
