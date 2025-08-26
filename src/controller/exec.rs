@@ -11,6 +11,14 @@ const MAX_PULSE_US: f32 = 2500.0;
 const ACTUATION_RANGE: f32 = 180.0;
 
 fn angle_to_ticks(angle: f32) -> u16 {
+    let angle = if angle < 0.0 {
+        0.0
+    } else if angle > 180.0 {
+        180.0
+    } else {
+        angle
+    };
+
     let pulse_us = MIN_PULSE_US + (angle / ACTUATION_RANGE) * (MAX_PULSE_US - MIN_PULSE_US);
 
     let ticks = (pulse_us * 4096.0) / 20_000.0;
