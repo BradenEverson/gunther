@@ -51,7 +51,7 @@ impl Commander {
         if !self.shooting {
             self.shooting = true;
             self.send(&[Op::StartShoot]);
-            std::thread::sleep(Duration::from_millis(500));
+            // std::thread::sleep(Duration::from_millis(500));
         }
     }
 

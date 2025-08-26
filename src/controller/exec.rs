@@ -11,13 +11,7 @@ const MAX_PULSE_US: f32 = 2500.0;
 const ACTUATION_RANGE: f32 = 180.0;
 
 fn angle_to_ticks(angle: f32) -> u16 {
-    let angle = if angle < 0.0 {
-        0.0
-    } else if angle > 180.0 {
-        180.0
-    } else {
-        angle
-    };
+    let angle = angle.clamp(130.0, 180.0);
 
     let pulse_us = MIN_PULSE_US + (angle / ACTUATION_RANGE) * (MAX_PULSE_US - MIN_PULSE_US);
 
@@ -88,7 +82,7 @@ impl Controller {
                 // [ no payload ]
                 self.feed.set_high();
                 self.rev.set_high();
-                std::thread::sleep(Duration::from_millis(500));
+                // std::thread::sleep(Duration::from_millis(500));
                 self.trigger.set_high();
             }
             OpCode::EndShoot => {
