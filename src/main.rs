@@ -21,7 +21,8 @@ fn main() {
         0 => {
             unsafe { close(read_end) };
             let mut commander = Commander::new(write_end);
-            commander.process();
+            // commander.process();
+            commander.joystick_process();
         }
         _ => {
             unsafe { close(write_end) };
