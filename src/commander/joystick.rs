@@ -31,22 +31,28 @@ impl Commander {
                 if let Ok(axis_event) = AxisEvent::try_from(event) {
                     match axis_event {
                         AxisEvent::Axis(Axis::StickLeftRight, value) => {
-                            let (direction, steps) = if value < DEADZONE_LOW {
-                                (false, ((DEADZONE_LOW - value) as u32 / 10).min(MAX_STEPS))
+                            let val = if value < DEADZONE_LOW {
+                                Some((false, ((DEADZONE_LOW - value) as u32 / 10).min(MAX_STEPS)))
                             } else if value > DEADZONE_HIGH {
-                                (true, ((value - DEADZONE_HIGH) as u32 / 10).min(MAX_STEPS))
+                                Some((true, ((value - DEADZONE_HIGH) as u32 / 10).min(MAX_STEPS)))
                             } else {
-                                (false, 0)
+                                None
                             };
 
-                            let cmd = if direction {
-                                Op::Left(steps as u16, 1)
-                            } else {
-                                Op::Right(steps as u16, 1)
-                            };
-
-                            self.send(&[cmd]);
+                            if let Some((direction, steps)) = val {
+                                let cmd = if direction {
+                                    Op::Left(steps as u16, 1)
+                                } else {
+                                    Op::Right(steps as u16, 1)
+                                };
+                                self.send(&[cmd]);
+                                std::thread::sleep(Duration::from_micros(steps as u64));
+                            }
                         }
+
+                        // AxisEvent::Axis(Axis::StickUpDown, value) => {
+                        //
+                        // }
                         AxisEvent::Button(joystick::Button::Trigger, true) => self.shoot(),
 
                         AxisEvent::Button(joystick::Button::Trigger, false) => self.stop_shoot(),
