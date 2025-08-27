@@ -41,18 +41,19 @@ impl Commander {
 
                             if let Some((direction, steps)) = val {
                                 let cmd = if direction {
-                                    Op::Left(steps as u16, 1)
-                                } else {
                                     Op::Right(steps as u16, 1)
+                                } else {
+                                    Op::Left(steps as u16, 1)
                                 };
                                 self.send(&[cmd]);
                                 std::thread::sleep(Duration::from_micros(steps as u64));
                             }
                         }
 
-                        // AxisEvent::Axis(Axis::StickUpDown, value) => {
-                        //
-                        // }
+                        AxisEvent::Axis(Axis::StickUpDown, value) => {
+                            println!("{value}");
+                        }
+
                         AxisEvent::Button(joystick::Button::Trigger, true) => self.shoot(),
 
                         AxisEvent::Button(joystick::Button::Trigger, false) => self.stop_shoot(),
