@@ -51,7 +51,11 @@ impl Commander {
                         }
 
                         AxisEvent::Axis(Axis::StickUpDown, value) => {
-                            println!("{value}");
+                            if value > 550 {
+                                self.move_down(1);
+                            } else if value < 450 {
+                                self.move_up(1);
+                            }
                         }
 
                         AxisEvent::Button(joystick::Button::Trigger, true) => self.shoot(),
