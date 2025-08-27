@@ -40,14 +40,16 @@ impl Commander {
                             };
 
                             let cmd = if direction {
-                                Op::Left(100, 1)
+                                Op::Left(steps as u16, 1)
                             } else {
-                                Op::Right(100, 1)
+                                Op::Right(steps as u16, 1)
                             };
 
                             self.send(&[cmd]);
                         }
+                        AxisEvent::Button(joystick::Button::Trigger, true) => self.shoot(),
 
+                        AxisEvent::Button(joystick::Button::Trigger, false) => self.stop_shoot(),
                         _ => {}
                     }
                 }
