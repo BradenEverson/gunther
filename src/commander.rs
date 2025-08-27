@@ -1,9 +1,8 @@
 //! A command sender for the turret
 
 pub mod cv;
+pub mod joystick;
 pub mod op;
-
-use std::time::Duration;
 
 use libc::c_void;
 use op::Op;

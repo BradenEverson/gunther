@@ -10,6 +10,7 @@ rppal = "0.22.1"
 ndarray = "0.16.1"
 opencv = "0.95.1"
 ort = "=2.0.0-rc.10"
+evdev = "0.13.1"
 
 [lints.rust]
 missing_docs = "warn"
