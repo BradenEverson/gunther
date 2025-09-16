@@ -189,18 +189,18 @@ impl Commander {
                     }
                 }
             } else {
-                self.frames_without_seen += 1;
                 self.stop_shoot();
-
-                if self.frames_without_seen > 5 {
-                    self.send(&[self.last_direction_moved]);
-                    match self.last_direction_moved {
-                        Op::Left(dir, _) | Op::Right(dir, _) => {
-                            std::thread::sleep(Duration::from_micros(dir as u64))
-                        }
-                        _ => unreachable!("We only store directions"),
-                    }
-                }
+                // self.frames_without_seen += 1;
+                //
+                // if self.frames_without_seen > 5 {
+                //     self.send(&[self.last_direction_moved]);
+                //     match self.last_direction_moved {
+                //         Op::Left(dir, _) | Op::Right(dir, _) => {
+                //             std::thread::sleep(Duration::from_micros(dir as u64))
+                //         }
+                //         _ => unreachable!("We only store directions"),
+                //     }
+                // }
             }
 
             highgui::imshow("window", &frame).expect("Oh no couldn't show image to GUI");
